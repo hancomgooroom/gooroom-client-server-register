@@ -37,7 +37,7 @@ then
 else
 	systemctl stop gooroom-agent
 	DO="yes"
-	while [ $DO == "yes"  ]
+	while [ "$DO" == "yes"  ]
 	do
 		
 		if ( $CMD )
