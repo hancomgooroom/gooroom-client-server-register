@@ -1,3 +1,10 @@
+gooroom-client-server-register (1.1.2+han3u1) unstable; urgency=medium
+
+  [ cjheo ]
+  * [47d6e41f] 단말이 자동등록에 성공 했음에도 gcsr_auto.conf 파일이 삭제되지 않는 오류 수정
+
+ -- Gooroom Autobuilder <jenkins@gooroom.kr>  Sat, 04 Nov 2023 15:00:28 +0900
+
 gooroom-client-server-register (1.1.1+han3u1) unstable; urgency=medium
 
   [ hnc-cjs ]
