@@ -197,7 +197,7 @@ class ServerCertification(Certification):
                     tries += 1
                     if tries >= 5:
                         raise
-                    time.sleep(0.1)
+                    time.sleep(2)
 
             certs = ssl_conn.get_peer_cert_chain()
             server_crt = ssl_conn.get_peer_certificate()
