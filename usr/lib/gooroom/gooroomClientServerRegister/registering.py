@@ -12,7 +12,7 @@ import codecs
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gtk, GLib
 
 import certification
 import subprocess
@@ -26,6 +26,47 @@ class RegisterThread(threading.Thread):
         threading.Thread.__init__(self)
         self.datas = datas
         self.application = application
+        self.WORK_DIR = '/usr/lib/gooroom/gooroomClientServerRegister'
+
+    def make_result_view(self, result, errlog=None):
+        result_image = self.application.builder.get_object('result_image')
+        result_title = self.application.builder.get_object('result_title')
+        result_detail = self.application.builder.get_object('result_detail')
+        result_button = self.application.builder.get_object('result_button')
+
+        result_detail.set_justify(Gtk.Justification.CENTER)
+        text_mark = str("<span fgcolor='#0251ff'>%s</span>" % _('Administrator'))
+
+        if result:
+            result_button.get_style_context().remove_class('mono_button')
+            result_button.get_style_context().add_class('accent_button')
+            result_button.set_label(_('Finished'))
+            result_button.connect('clicked', Gtk.main_quit)
+
+            result_image.set_from_file(self.WORK_DIR + '/images/image-success.svg')
+            result_title.set_text(_('Client registration completed.'))
+
+            text_orig = str(_('Contact to Server Administrator for Detail Management.'))
+            text_chage = text_orig.replace(_('Administrator'), text_mark)
+            result_detail.set_markup(text_chage)
+        else:
+            result_button.get_style_context().add_class('mono_button')
+            result_button.set_label(_('Prev'))
+            result_button.connect('clicked', self.application.prev_page)
+
+            result_image.set_from_file(self.WORK_DIR + '/images/image-failed.svg')
+            result_title.set_text(_('Client registration failed.'))
+            if errlog:
+                text_orig = str('{0}\n{1}'.format(errlog, _('Contact to Server Administrator for Resolution.')))
+            else:
+                text_orig = str(_('Contact to Server Administrator for Resolution.'))
+            text_chage = text_orig.replace(_('Administrator'), text_mark)
+            result_detail.set_markup(text_chage)
+
+        #register_stack = self.application.builder.get_object('register_stack')
+        #register_stack.set_visible_child_name('result_page')
+        register_stack = self.application.builder.get_object('stack1')
+        register_stack.set_visible_child_name('page1')
 
     def result_format(self, result):
         "Return result log pretty"
@@ -36,6 +77,7 @@ class RegisterThread(threading.Thread):
         return result_text
 
     def run(self):
+        errlog = str()
         try:
             textbuffer = self.application.builder.get_object('textbuffer_result')
             client_data = next(self.datas)
@@ -52,7 +94,7 @@ class RegisterThread(threading.Thread):
                 Gdk.threads_leave()
 
                 if server_result['err']:
-                    return Exception
+                    raise Exception
 
             server_data = next(self.datas)
             client_certification = certification.ClientCertification(client_data['domain'])
@@ -67,16 +109,13 @@ class RegisterThread(threading.Thread):
                 textbuffer.set_text('{0}\n{1}'.format(current_text, result_text))
                 Gdk.threads_leave()
                 if client_result['err']:
-                    return Exception
+                    errlog = str(client_result['log'][-2])
+                    raise Exception
         except Exception as e:
-            Gdk.threads_enter()
-            self.application.builder.get_object('button_prev1').set_sensitive(True)
-            Gdk.threads_leave()
+            GLib.idle_add(self.make_result_view, False, errlog)
             print(type(e), e)
-        finally:
-            Gdk.threads_enter()
-            self.application.builder.get_object('button_ok1').set_sensitive(True)
-            Gdk.threads_leave()
+        else:
+            GLib.idle_add(self.make_result_view, True)
 
 class Registering():
     "Registering parent class"
@@ -161,6 +200,14 @@ class GUIRegistering(Registering):
     def __init__(self):
         Registering.__init__(self)
         Gdk.threads_init()
+
+        self.WORK_DIR = '/usr/lib/gooroom/gooroomClientServerRegister'
+        cssProvider = Gtk.CssProvider()
+        cssProvider.load_from_path ('%s/style.scss'% self.WORK_DIR)
+        screen = Gdk.Screen.get_default()
+        styleContext = Gtk.StyleContext()
+        styleContext.add_provider_for_screen (screen, cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
         glade_file = "%s/gooroomClientServerRegister.glade" % self.WORK_DIR
         self.builder = Gtk.Builder()
         self.builder.add_from_file(glade_file)
@@ -170,6 +217,11 @@ class GUIRegistering(Registering):
         self.window.set_title(_('Gooroom Client Server Register'))
         self.window.set_icon_name('gooroom-client-server-register')
         self.window.set_position(Gtk.WindowPosition.CENTER)
+
+        self.accel_group = Gtk.AccelGroup()
+        key, mod = Gtk.accelerator_parse("F1")
+        self.accel_group.connect(key, mod, Gtk.AccelFlags.VISIBLE, self.open_help)
+        self.window.add_accel_group(self.accel_group)
 
         self.builder.connect_signals(self)
         self.builder.get_object('label1').set_text(_('Terminal Registration'))
@@ -203,6 +255,9 @@ class GUIRegistering(Registering):
         Gtk.main()
         Gdk.threads_leave()
 
+    def prev_page(self, button):
+        self.builder.get_object('stack1').set_visible_child_name('page0')
+
     def onRegkeyClick(self, button):
         self.show_info_dialog(_('Enter the terminal registration key issued by the GPMS administrator'))
         return
@@ -210,6 +265,9 @@ class GUIRegistering(Registering):
     def onServerClick(self, button):
         self.show_info_dialog(_('Enter the domain and IP address of the GKM server'))
         return
+
+    def open_help(self, key, mod, flag, widget):
+        os.system("yelp help:gooroom-help-gcsr")
 
     def onRegisterPressed(self, button):
         textbuffer = self.builder.get_object('textbuffer_result')
@@ -235,11 +293,9 @@ class GUIRegistering(Registering):
             self.show_info_dialog(_('Check the server address'))
             return
 
-
         datas = self.easy_get_datas()
         register_thread = RegisterThread(datas, self)
         register_thread.start()
-        self.builder.get_object('stack1').set_visible_child_name('page1')
 
     def get_serverinfo(self):
         """
@@ -492,6 +548,7 @@ class ShellRegistering(Registering):
         if args.cmd == 'cli':
             client_data = self.cli()
         elif args.cmd == 'noninteractive':
+            print ("args.comd: [ %s ]" %args.cmd)
             client_data = {}
             client_data['cn'] = self.make_cn()
             client_data['name'] = args.name
@@ -510,6 +567,7 @@ class ShellRegistering(Registering):
                 client_data['ipv4'] = ''
                 client_data['ipv6'] = self.make_ipv6name()
         elif args.cmd == 'noninteractive-regkey':
+            print ("args.comd: [ %s ]" %args.cmd)
             client_data = {}
             client_data['cn'] = self.make_cn()
             client_data['name'] = args.name

@@ -1,0 +1,112 @@
+.background { background: #ffffff; }
+.radio_style > label {
+    font-size: 13px;
+    margin: 0 0 0 10px;
+    color: #000100;
+}
+.radio_style > radio:checked{
+	-gtk-icon-source: url('images/radio_selected.svg')
+}
+.radio_style > radio{
+    -gtk-icon-source: url('images/radio_unselected.svg')
+}
+.checkbox_style > label {
+    font-size: 13px;
+    margin: 0 0 0 10px;
+    color: #000100;
+}
+.checkbox_style > check:checked{
+	-gtk-icon-source: url('images/checkbox_selected.svg')
+}
+.checkbox_style > check{
+    -gtk-icon-source: url('images/checkbox_unselected.svg')
+}
+.textview_style text{
+    color: rgba(0, 1, 0, 0.5);
+    font-size: 13px
+}
+.list_info { background: #ffffff; }
+.list_info *:hover {background: #ffffff; }
+.outline_button {
+    min-width: 120px;
+    min-height:34px;
+    border-radius: 10px;
+    border: solid 1px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+    font-size: 13px;
+    color: #000100;
+}
+.outline_button:hover {
+    border: solid 1px #3e6ddc;
+}
+.outline_button:active {
+    border: solid 1px #3e6ddc;
+    background-color: #d9e2f8
+}
+.accent_button {
+    min-width: 120px;
+    min-height:34px;
+    border-radius: 10px;
+    font-size: 13px;
+    background-color: #3e6ddc;
+    border: none;
+    color: #ffffff;
+}
+.accent_button:hover {
+    background-color: #2f58b7;
+}
+.accent_button:active {
+    background-color: #2a4ea3;
+}
+.mono_button {
+    font-size: 13px;
+    background-color: #999999;
+    border: none;
+    color: #ffffff;
+    min-width: 120px;
+    min-height:34px;
+    border-radius: 10px;
+}
+.mono_button:hover {
+    background-color: #8a8a8a
+}
+.mono_button:active {
+    background-color: #7a7a7a
+}
+entry {
+    border-radius: 10px;
+    border:solid 1px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+    min-height: 34px;
+    font-size: 13px;
+    color: rgba(0, 1, 0, 0.5)
+}
+entry:focus {
+    border:solid 1px #3e6ddc;
+}
+.Item_title {
+    font-size: 13px;
+    color: #000100;
+    font-weight: 500;
+}
+.Item_detail {
+    font-size: 13px;
+    color: rgba(0, 1, 0, 0.5);
+}
+.Server_Label {
+    font-size: 13px;
+    color: rgba(0, 1, 0, 0.5)
+}
+.Client_Label {
+    font-size: 12px;
+    color: rgba(0, 1, 0, 0.5)
+}
+.result_title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #000000;
+}
+.result_detail {
+    font-size: 14px;
+    color: #4a4a4a;
+}
